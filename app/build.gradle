@@ -1,0 +1,105 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id "com.google.protobuf" version "0.9.4"
+}
+
+android {
+    namespace 'com.android.protobufdemo'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "com.android.protobufdemo"
+        minSdk 24
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main {
+            proto {
+                srcDir 'src/main/proto'
+            }
+
+            java {
+                srcDir 'src/main/java'
+            }
+        }
+    }
+
+    protobuf {
+        protoc {
+            if (osdetector.os == "osx") {
+                artifact = 'com.google.protobuf:protoc:3.21.4:osx-x86_64'
+            } else {
+                artifact = 'com.google.protobuf:protoc:3.21.4'
+            }
+            // artifact = 'com.google.protobuf:protoc:3.5.1'
+            // path = '/usr/local/bin/protoc'
+        }
+
+        plugins {
+            grpc {
+                // https://github.com/grpc/grpc-java/tree/master
+                artifact = 'io.grpc:protoc-gen-grpc-java:1.60.1'
+            }
+            // path = ''
+        }
+
+        generateProtoTasks {
+            all().each { task ->
+//                task.builtins {
+//                    remove java
+//                }
+                task.builtins {
+                    java { option 'lite' }
+                }
+                task.plugins {
+                    grpc { option 'lite' }
+                }
+
+                task.builtins {
+                    // 生产java源码
+                    java {}
+                }
+            }
+
+            all()*.plugins {
+                grpc {}
+            }
+        }
+
+        dependencies {
+            // protobuf fileTree('/Users/pds/pds/Android/proto/googleapis-master')
+        }
+
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+
+    implementation 'com.google.protobuf:protobuf-java:3.5.1'
+    implementation 'com.google.protobuf:protoc:3.5.1'
+
+    implementation 'io.grpc:grpc-okhttp:1.60.0'
+    implementation 'io.grpc:grpc-protobuf-lite:1.60.0'
+    implementation 'io.grpc:grpc-stub:1.60.0'
+    compileOnly 'org.apache.tomcat:annotations-api:6.0.53'
+}
